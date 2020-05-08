@@ -1,4 +1,4 @@
-import { createStore } from "@stencil/store";
+import { createStore } from '@stencil/store';
 
 type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
 type TranslationStore = Record<string, string>;
@@ -14,23 +14,22 @@ export interface TranslatorOptions {
 }
 
 const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor' | 'translations'>> = {
-  interpolateValues: (str: string, interpolations: Record<string, string>): string => (
-    str.replace(/\{([^}\s]+?)\}/, (match, id, offset) => (
-      (str.charAt(offset - 1) === '\\')
-        ? match
-        : interpolations[id]
-    )).replace('\\{', '{')
-  ),
+  interpolateValues: (str: string, interpolations: Record<string, string>): string =>
+    str
+      .replace(/\{([^}\s]+?)\}/, (match, id, offset) =>
+        str.charAt(offset - 1) === '\\' ? match : interpolations[id]
+      )
+      .replace('\\{', '{'),
   keyWithPlural: (key: string, pluralType: PluralType) => `${key}.${pluralType}`,
   locale: 'en',
-  missingKey: () => { },
-  translationForMissingKey: (key) => `***${key}***`,
-}
+  missingKey: () => {},
+  translationForMissingKey: key => `***${key}***`,
+};
 
 export const createI18nStore = (givenOptions: TranslatorOptions) => {
   const store = createStore({
     ...defaultOptions,
-    ...givenOptions
+    ...givenOptions,
   });
 
   let translations = createStore(givenOptions.translations);
@@ -65,12 +64,16 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
       return get('interpolateValues')(translatedValue, interpolations);
     }
 
-    get('missingKey')(key, translations.state)
+    get('missingKey')(key, translations.state);
 
     return get('translationForMissingKey')(key, translations.state);
   };
 
   return {
-    addTranslations, loadTranslations, onLocaleChanged, translate, store
+    addTranslations,
+    loadTranslations,
+    onLocaleChanged,
+    translate,
+    store,
   };
 };

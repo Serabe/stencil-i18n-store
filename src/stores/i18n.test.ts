@@ -1,4 +1,4 @@
-import { createI18nStore } from "./i18n";
+import { createI18nStore } from './i18n';
 
 const pluralFor = number => {
   switch (number) {
@@ -9,15 +9,15 @@ const pluralFor = number => {
     default:
       return 'other';
   }
-}
+};
 
-describe("translate", () => {
-  it("returns the value in the translation store", () => {
+describe('translate', () => {
+  it('returns the value in the translation store', () => {
     const { translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.KEY': 'My translation'
-      }
+        'WADUS.MY.KEY': 'My translation',
+      },
     });
 
     expect(translate('WADUS.MY.KEY')).toBe('My translation');
@@ -26,7 +26,7 @@ describe("translate", () => {
   it('returns the missing key surrounded by asterisks on each side by default', () => {
     const { translate } = createI18nStore({
       pluralFor,
-      translations: {}
+      translations: {},
     });
 
     expect(translate('DARK.SIDE')).toBe('***DARK.SIDE***');
@@ -34,7 +34,7 @@ describe("translate", () => {
 
   it('calls translationForMissingKey and returns its value if key is not found', () => {
     const key = 'THIS.KEY.DOES.NOT.EXIST';
-    const translation = "Mahna mahna";
+    const translation = 'Mahna mahna';
     const translationForMissingKey = jest.fn().mockReturnValue(translation);
     const translations = {};
     const { translate } = createI18nStore({
@@ -69,8 +69,8 @@ describe("translate", () => {
     const { translate } = createI18nStore({
       pluralFor,
       translations: {
-        'KEY': 'Hello, {name}'
-      }
+        KEY: 'Hello, {name}',
+      },
     });
 
     expect(translate('KEY', { name: 'Sergio' })).toBe('Hello, Sergio');
@@ -81,7 +81,7 @@ describe("translate", () => {
     const { translate } = createI18nStore({
       pluralFor,
       translations: {
-        'KEY': 'Hello, \\{name}'
+        KEY: 'Hello, \\{name}',
       },
     });
 
@@ -92,8 +92,8 @@ describe("translate", () => {
     const { translate } = createI18nStore({
       pluralFor,
       translations: {
-        'KEY': 'Hello, {my name}'
-      }
+        KEY: 'Hello, {my name}',
+      },
     });
 
     expect(translate('KEY', { 'my name': 'Sergio' })).toBe('Hello, {my name}');
@@ -105,7 +105,7 @@ describe("translate", () => {
     const { translate } = createI18nStore({
       pluralFor,
       translations: {
-        'KEY': 'Hello, {name}'
+        KEY: 'Hello, {name}',
       },
     });
 
@@ -123,7 +123,7 @@ describe("translate", () => {
       keyWithPlural,
       pluralFor,
       translations: {
-        'KEY': 'Hello, {name}'
+        KEY: 'Hello, {name}',
       },
     });
 
@@ -173,12 +173,12 @@ describe('loadTranslations', () => {
     const { loadTranslations, translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.KEY': 'My translation'
-      }
+        'WADUS.MY.KEY': 'My translation',
+      },
     });
 
     loadTranslations({
-      'WADUS.MY.KEY': 'My new translation'
+      'WADUS.MY.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.KEY')).toBe('My new translation');
@@ -188,12 +188,12 @@ describe('loadTranslations', () => {
     const { loadTranslations, translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.OLD.KEY': 'My translation'
-      }
+        'WADUS.MY.OLD.KEY': 'My translation',
+      },
     });
 
     loadTranslations({
-      'WADUS.MY.NEW.KEY': 'My new translation'
+      'WADUS.MY.NEW.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.NEW.KEY')).toBe('My new translation');
@@ -206,29 +206,29 @@ describe('loadTranslations', () => {
         return `Missing key: ${key}`;
       },
       translations: {
-        'WADUS.MY.OLD.KEY': 'My translation'
-      }
+        'WADUS.MY.OLD.KEY': 'My translation',
+      },
     });
 
     loadTranslations({
-      'WADUS.MY.NEW.KEY': 'My new translation'
+      'WADUS.MY.NEW.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.OLD.KEY')).toBe('Missing key: WADUS.MY.OLD.KEY');
   });
-})
+});
 
 describe('addTranslations', () => {
   test('overrides old translations', () => {
     const { addTranslations, translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.KEY': 'My translation'
-      }
+        'WADUS.MY.KEY': 'My translation',
+      },
     });
 
     addTranslations({
-      'WADUS.MY.KEY': 'My new translation'
+      'WADUS.MY.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.KEY')).toBe('My new translation');
@@ -238,12 +238,12 @@ describe('addTranslations', () => {
     const { addTranslations, translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.OLD.KEY': 'My translation'
-      }
+        'WADUS.MY.OLD.KEY': 'My translation',
+      },
     });
 
     addTranslations({
-      'WADUS.MY.NEW.KEY': 'My new translation'
+      'WADUS.MY.NEW.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.NEW.KEY')).toBe('My new translation');
@@ -253,14 +253,14 @@ describe('addTranslations', () => {
     const { addTranslations, translate } = createI18nStore({
       pluralFor,
       translations: {
-        'WADUS.MY.OLD.KEY': 'My translation'
-      }
+        'WADUS.MY.OLD.KEY': 'My translation',
+      },
     });
 
     addTranslations({
-      'WADUS.MY.NEW.KEY': 'My new translation'
+      'WADUS.MY.NEW.KEY': 'My new translation',
     });
 
     expect(translate('WADUS.MY.OLD.KEY')).toBe('My translation');
   });
-})
+});
