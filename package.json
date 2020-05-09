@@ -1,9 +1,10 @@
 {
-  "name": "stencil-i18n-store",
+  "name": "stencil-internationalization-store",
   "version": "0.1.0",
   "description": "",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "homepage": "",
   "scripts": {
     "build": "tsc -p .",
     "lint.prettier": "node_modules/.bin/prettier --write 'src/**/*.ts'",
