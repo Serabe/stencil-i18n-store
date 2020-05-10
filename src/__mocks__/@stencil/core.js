@@ -1,0 +1,1 @@
+exports.getAssetPath = x => x;

@@ -1,3 +1,4 @@
+import { getAssetPath } from '@stencil/core';
 import { createStore } from '@stencil/store';
 import { bestLocale } from '../helpers/best-locale';
 
@@ -7,6 +8,7 @@ type TranslationStore = Record<string, string>;
 export interface TranslatorOptions {
   availableLocales?: readonly string[];
   defaultLocale?: string;
+  fetchLocale?: (locale: string) => Promise<Record<string, string>>;
   interpolateValues?: (str: string, interpolations: Record<string, string>) => string;
   keyWithPlural?: (key: string, pluralType: PluralType) => string;
   locale?: string;
@@ -14,12 +16,16 @@ export interface TranslatorOptions {
   missingKey?: (key: string, translations: TranslationStore) => void;
   pluralFor: (number: number) => PluralType;
   translationForMissingKey?: (key: string, translations: TranslationStore) => string;
-  translations: TranslationStore;
+  translations?: TranslationStore;
 }
 
-const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor' | 'translations'>> = {
+const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor'>> = {
   availableLocales: ['en'],
   defaultLocale: 'en',
+  fetchLocale: async (locale: string): Promise<Record<string, string>> => {
+    const response = await fetch(getAssetPath(`/assets/locales/${locale}.json`));
+    return response.json();
+  },
   interpolateValues: (str: string, interpolations: Record<string, string>): string =>
     str
       .replace(/\{([^}\s]+?)\}/, (match, id, offset) =>
@@ -30,6 +36,7 @@ const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor' | 'translatio
   locale: 'en',
   localeList: typeof navigator === 'undefined' ? ['en'] : navigator.languages ?? ['en'],
   missingKey: () => {},
+  translations: {},
   translationForMissingKey: key => `***${key}***`,
 };
 
@@ -48,10 +55,10 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
   return fullOptions;
 };
 
-export const createI18nStore = (givenOptions: TranslatorOptions) => {
+export const createI18nStore = async (givenOptions: TranslatorOptions) => {
   const store = createStore(fillOptions(givenOptions));
 
-  let translations = createStore(givenOptions.translations);
+  let translations = createStore(givenOptions.translations ?? {});
 
   const loadTranslations = (newTranslations: Record<string, string>) => {
     translations = createStore(newTranslations);
@@ -65,6 +72,14 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
   };
 
   const onLocaleChanged = cb => store.onChange('locale', cb);
+
+  // Fetch translation
+  const fetchTranslations = async locale =>
+    (translations = createStore(await store.state.fetchLocale(locale)));
+  onLocaleChanged(fetchTranslations);
+  if (Object.keys(givenOptions.translations ?? {}).length === 0) {
+    await fetchTranslations(store.state.locale);
+  }
 
   const translate = (
     key: string,

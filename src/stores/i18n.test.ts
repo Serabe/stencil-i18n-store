@@ -1,3 +1,4 @@
+import 'jest-fetch-mock';
 import { createI18nStore } from './i18n';
 
 const pluralFor = number => {
@@ -12,8 +13,8 @@ const pluralFor = number => {
 };
 
 describe('translate', () => {
-  it('returns the value in the translation store', () => {
-    const { translate } = createI18nStore({
+  it('returns the value in the translation store', async () => {
+    const { translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.KEY': 'My translation',
@@ -23,21 +24,21 @@ describe('translate', () => {
     expect(translate('WADUS.MY.KEY')).toBe('My translation');
   });
 
-  it('returns the missing key surrounded by asterisks on each side by default', () => {
-    const { translate } = createI18nStore({
+  it('returns the missing key surrounded by asterisks on each side by default', async () => {
+    const { translate } = await createI18nStore({
       pluralFor,
-      translations: {},
+      translations: { key: 'value' },
     });
 
     expect(translate('DARK.SIDE')).toBe('***DARK.SIDE***');
   });
 
-  it('calls translationForMissingKey and returns its value if key is not found', () => {
+  it('calls translationForMissingKey and returns its value if key is not found', async () => {
     const key = 'THIS.KEY.DOES.NOT.EXIST';
     const translation = 'Mahna mahna';
     const translationForMissingKey = jest.fn().mockReturnValue(translation);
-    const translations = {};
-    const { translate } = createI18nStore({
+    const translations = { key: 'value' };
+    const { translate } = await createI18nStore({
       pluralFor,
       translations,
       translationForMissingKey,
@@ -49,11 +50,11 @@ describe('translate', () => {
     expect(translationForMissingKey).toHaveBeenCalledWith(key, translations);
   });
 
-  it('calls missing key if the key is not found', () => {
+  it('calls missing key if the key is not found', async () => {
     const key = 'THIS.KEY.DOES.NOT.EXIST';
     const missingKey = jest.fn();
-    const translations = {};
-    const { translate } = createI18nStore({
+    const translations = { key: 'value' };
+    const { translate } = await createI18nStore({
       pluralFor,
       missingKey,
       translations,
@@ -65,8 +66,8 @@ describe('translate', () => {
     expect(missingKey).toHaveBeenCalledWith(key, translations);
   });
 
-  it('interpolates values inside curly braces by default', () => {
-    const { translate } = createI18nStore({
+  it('interpolates values inside curly braces by default', async () => {
+    const { translate } = await createI18nStore({
       pluralFor,
       translations: {
         KEY: 'Hello, {name}',
@@ -77,8 +78,8 @@ describe('translate', () => {
     expect(translate('KEY', { name: 'Manu' })).toBe('Hello, Manu');
   });
 
-  it('does not interpolate if the first curly brace has a \\ before it', () => {
-    const { translate } = createI18nStore({
+  it('does not interpolate if the first curly brace has a \\ before it', async () => {
+    const { translate } = await createI18nStore({
       pluralFor,
       translations: {
         KEY: 'Hello, \\{name}',
@@ -88,8 +89,8 @@ describe('translate', () => {
     expect(translate('KEY', { name: 'Sergio' })).toBe('Hello, {name}');
   });
 
-  it('does not interpolate if there is a space inside the curly braces', () => {
-    const { translate } = createI18nStore({
+  it('does not interpolate if there is a space inside the curly braces', async () => {
+    const { translate } = await createI18nStore({
       pluralFor,
       translations: {
         KEY: 'Hello, {my name}',
@@ -99,10 +100,10 @@ describe('translate', () => {
     expect(translate('KEY', { 'my name': 'Sergio' })).toBe('Hello, {my name}');
   });
 
-  it('calls pluralFor if a magic number is passed', () => {
+  it('calls pluralFor if a magic number is passed', async () => {
     const pluralFor = jest.fn().mockReturnValue('few');
 
-    const { translate } = createI18nStore({
+    const { translate } = await createI18nStore({
       pluralFor,
       translations: {
         KEY: 'Hello, {name}',
@@ -115,11 +116,11 @@ describe('translate', () => {
     expect(pluralFor).toHaveBeenCalledWith(2);
   });
 
-  it('calls keyWithPlural with key and pluralType returned by pluralFor if a given magic number is passed', () => {
+  it('calls keyWithPlural with key and pluralType returned by pluralFor if a given magic number is passed', async () => {
     const pluralFor = jest.fn().mockReturnValue('other');
     const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
-    const { translate } = createI18nStore({
+    const { translate } = await createI18nStore({
       keyWithPlural,
       pluralFor,
       translations: {
@@ -133,11 +134,11 @@ describe('translate', () => {
     expect(keyWithPlural).toHaveBeenCalledWith('KEY', 'other');
   });
 
-  it('uses the key returned by keyWithPlural if one is found', () => {
+  it('uses the key returned by keyWithPlural if one is found', async () => {
     const pluralFor = jest.fn().mockReturnValue('other');
     const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
-    const { translate } = createI18nStore({
+    const { translate } = await createI18nStore({
       keyWithPlural,
       pluralFor,
       translations: {
@@ -150,11 +151,11 @@ describe('translate', () => {
     expect(translate('KEY', {}, 2)).toBe('Hello');
   });
 
-  it('still interpolates given a magic number', () => {
+  it('still interpolates given a magic number', async () => {
     const pluralFor = jest.fn().mockReturnValue('other');
     const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
-    const { translate } = createI18nStore({
+    const { translate } = await createI18nStore({
       keyWithPlural,
       pluralFor,
       translations: {
@@ -169,8 +170,8 @@ describe('translate', () => {
 });
 
 describe('loadTranslations', () => {
-  test('overrides old translations', () => {
-    const { loadTranslations, translate } = createI18nStore({
+  test('overrides old translations', async () => {
+    const { loadTranslations, translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.KEY': 'My translation',
@@ -184,8 +185,8 @@ describe('loadTranslations', () => {
     expect(translate('WADUS.MY.KEY')).toBe('My new translation');
   });
 
-  test('adds new translations', () => {
-    const { loadTranslations, translate } = createI18nStore({
+  test('adds new translations', async () => {
+    const { loadTranslations, translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.OLD.KEY': 'My translation',
@@ -199,8 +200,8 @@ describe('loadTranslations', () => {
     expect(translate('WADUS.MY.NEW.KEY')).toBe('My new translation');
   });
 
-  test('removes old translations', () => {
-    const { loadTranslations, translate } = createI18nStore({
+  test('removes old translations', async () => {
+    const { loadTranslations, translate } = await createI18nStore({
       pluralFor,
       translationForMissingKey(key) {
         return `Missing key: ${key}`;
@@ -219,8 +220,8 @@ describe('loadTranslations', () => {
 });
 
 describe('addTranslations', () => {
-  test('overrides old translations', () => {
-    const { addTranslations, translate } = createI18nStore({
+  test('overrides old translations', async () => {
+    const { addTranslations, translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.KEY': 'My translation',
@@ -234,8 +235,8 @@ describe('addTranslations', () => {
     expect(translate('WADUS.MY.KEY')).toBe('My new translation');
   });
 
-  test('adds new translations', () => {
-    const { addTranslations, translate } = createI18nStore({
+  test('adds new translations', async () => {
+    const { addTranslations, translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.OLD.KEY': 'My translation',
@@ -249,8 +250,8 @@ describe('addTranslations', () => {
     expect(translate('WADUS.MY.NEW.KEY')).toBe('My new translation');
   });
 
-  test('keeps old translations', () => {
-    const { addTranslations, translate } = createI18nStore({
+  test('keeps old translations', async () => {
+    const { addTranslations, translate } = await createI18nStore({
       pluralFor,
       translations: {
         'WADUS.MY.OLD.KEY': 'My translation',
@@ -266,8 +267,12 @@ describe('addTranslations', () => {
 });
 
 describe('locale', () => {
-  test('if locale is passed as option, that one is the locale', () => {
-    const { store } = createI18nStore({
+  beforeEach(() => {
+    fetchMock.mockResponse('{}');
+  });
+
+  test('if locale is passed as option, that one is the locale', async () => {
+    const { store } = await createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -279,8 +284,8 @@ describe('locale', () => {
     expect(store.state.locale).toBe('pt');
   });
 
-  test('guess from options which is the best locale', () => {
-    const { store } = createI18nStore({
+  test('guess from options which is the best locale', async () => {
+    const { store } = await createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -291,8 +296,8 @@ describe('locale', () => {
     expect(store.state.locale).toBe('es');
   });
 
-  test('guess from options which is the best locale', () => {
-    const { store } = createI18nStore({
+  test('guess from options which is the best locale', async () => {
+    const { store } = await createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -303,8 +308,8 @@ describe('locale', () => {
     expect(store.state.locale).toBe('es');
   });
 
-  test('if defaultLocale is not passed, take the first from the availableLocales array', () => {
-    const { store } = createI18nStore({
+  test('if defaultLocale is not passed, take the first from the availableLocales array', async () => {
+    const { store } = await createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['fr', 'en', 'es'],
@@ -314,8 +319,8 @@ describe('locale', () => {
     expect(store.state.defaultLocale).toBe('fr');
   });
 
-  test('if defaultLocale is not passed and there are no availableLocales, use "en"', () => {
-    const { store } = createI18nStore({
+  test('if defaultLocale is not passed and there are no availableLocales, use "en"', async () => {
+    const { store } = await createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: [],
@@ -325,3 +330,64 @@ describe('locale', () => {
     expect(store.state.defaultLocale).toBe('en');
   });
 });
+
+describe('fetchTranslations', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+    fetchMock.mockResponse(JSON.stringify({}));
+  });
+
+  test('it is not called if some translations are passed in', async () => {
+    await createI18nStore({
+      pluralFor,
+      translations: {
+        KEY: 'Sorry',
+      },
+    });
+
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test('it is called if no translations are passed in', async () => {
+    fetchMock.mockResponse(JSON.stringify({ key: 'hello, {name}' }));
+    const { translate } = await createI18nStore({
+      pluralFor,
+      translations: {},
+    });
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(translate('key', { name: 'Sergio' })).toBe('hello, Sergio');
+  });
+
+  test('it is called when locale changes', async () => {
+    fetchMock.mockResponses(
+      JSON.stringify({ key: 'hello, {name}' }),
+      JSON.stringify({ key: 'hola, {name}' })
+    );
+    const { translate, store } = await createI18nStore({
+      pluralFor,
+      translations: {},
+    });
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(translate('key', { name: 'Sergio' })).toBe('hello, Sergio');
+
+    store.state.locale = 'es';
+
+    await forCondition(() => fetch['mock'].calls.length === 2);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(translate('key', { name: 'Sergio' })).toBe('hola, Sergio');
+  });
+});
+
+function forCondition(predicate: () => boolean): Promise<void> {
+  return new Promise(resolve => {
+    const id = setInterval(() => {
+      if (predicate()) {
+        clearInterval(id);
+        resolve();
+      }
+    }, 5);
+  });
+}
