@@ -350,10 +350,11 @@ describe('fetchTranslations', () => {
 
   test('it is called if no translations are passed in', async () => {
     fetchMock.mockResponse(JSON.stringify({ key: 'hello, {name}' }));
-    const { translate } = await createI18nStore({
+    const { translate, waitUntilReady } = await createI18nStore({
       pluralFor,
       translations: {},
     });
+    await waitUntilReady;
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(translate('key', { name: 'Sergio' })).toBe('hello, Sergio');
@@ -364,10 +365,11 @@ describe('fetchTranslations', () => {
       JSON.stringify({ key: 'hello, {name}' }),
       JSON.stringify({ key: 'hola, {name}' })
     );
-    const { translate, store } = await createI18nStore({
+    const { translate, store, waitUntilReady } = await createI18nStore({
       pluralFor,
       translations: {},
     });
+    await waitUntilReady;
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(translate('key', { name: 'Sergio' })).toBe('hello, Sergio');

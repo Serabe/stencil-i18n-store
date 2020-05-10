@@ -55,7 +55,7 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
   return fullOptions;
 };
 
-export const createI18nStore = async (givenOptions: TranslatorOptions) => {
+export const createI18nStore = (givenOptions: TranslatorOptions) => {
   const store = createStore(fillOptions(givenOptions));
 
   let translations = createStore(givenOptions.translations ?? {});
@@ -77,9 +77,11 @@ export const createI18nStore = async (givenOptions: TranslatorOptions) => {
   const fetchTranslations = async locale =>
     (translations = createStore(await store.state.fetchLocale(locale)));
   onLocaleChanged(fetchTranslations);
-  if (Object.keys(givenOptions.translations ?? {}).length === 0) {
-    await fetchTranslations(store.state.locale);
-  }
+  const waitUntilReady: Promise<void> = (async () => {
+    if (Object.keys(givenOptions.translations ?? {}).length === 0) {
+      await fetchTranslations(store.state.locale);
+    }
+  })();
 
   const translate = (
     key: string,
@@ -109,5 +111,6 @@ export const createI18nStore = async (givenOptions: TranslatorOptions) => {
     onLocaleChanged,
     translate,
     store,
+    waitUntilReady,
   };
 };
