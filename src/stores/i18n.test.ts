@@ -383,6 +383,30 @@ describe('fetchTranslations', () => {
   });
 });
 
+describe('hasKey', () => {
+  it('returns true if we have a translation for the given key', async () => {
+    const { hasKey } = await createI18nStore({
+      pluralFor,
+      translations: {
+        KEY: 'Sorry',
+      },
+    });
+
+    expect(hasKey('KEY')).toBe(true);
+  });
+
+  it('returns false if we have no translation for the given key', async () => {
+    const { hasKey } = await createI18nStore({
+      pluralFor,
+      translations: {
+        KEY: 'Sorry',
+      },
+    });
+
+    expect(hasKey('NOT.A.KEY')).toBe(false);
+  });
+});
+
 function forCondition(predicate: () => boolean): Promise<void> {
   return new Promise(resolve => {
     const id = setInterval(() => {

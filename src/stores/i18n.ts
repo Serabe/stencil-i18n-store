@@ -71,6 +71,8 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     });
   };
 
+  const hasKey = (key: string) => key in translations.state;
+
   const onLocaleChanged = cb => store.onChange('locale', cb);
 
   // Fetch translation
@@ -107,6 +109,7 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
   return {
     addTranslations,
+    hasKey,
     loadTranslations,
     onLocaleChanged,
     translate,
