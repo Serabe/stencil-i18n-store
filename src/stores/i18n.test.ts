@@ -264,3 +264,64 @@ describe('addTranslations', () => {
     expect(translate('WADUS.MY.OLD.KEY')).toBe('My translation');
   });
 });
+
+describe('locale', () => {
+  test('if locale is passed as option, that one is the locale', () => {
+    const { store } = createI18nStore({
+      pluralFor,
+      translations: {},
+      availableLocales: ['en', 'es'],
+      defaultLocale: 'es',
+      locale: 'pt',
+      localeList: ['es', 'en'],
+    });
+
+    expect(store.state.locale).toBe('pt');
+  });
+
+  test('guess from options which is the best locale', () => {
+    const { store } = createI18nStore({
+      pluralFor,
+      translations: {},
+      availableLocales: ['en', 'es'],
+      defaultLocale: 'pt',
+      localeList: ['es', 'en'],
+    });
+
+    expect(store.state.locale).toBe('es');
+  });
+
+  test('guess from options which is the best locale', () => {
+    const { store } = createI18nStore({
+      pluralFor,
+      translations: {},
+      availableLocales: ['en', 'es'],
+      defaultLocale: 'pt',
+      localeList: ['es', 'en'],
+    });
+
+    expect(store.state.locale).toBe('es');
+  });
+
+  test('if defaultLocale is not passed, take the first from the availableLocales array', () => {
+    const { store } = createI18nStore({
+      pluralFor,
+      translations: {},
+      availableLocales: ['fr', 'en', 'es'],
+      localeList: ['es', 'en'],
+    });
+
+    expect(store.state.defaultLocale).toBe('fr');
+  });
+
+  test('if defaultLocale is not passed and there are no availableLocales, use "en"', () => {
+    const { store } = createI18nStore({
+      pluralFor,
+      translations: {},
+      availableLocales: [],
+      localeList: ['es', 'en'],
+    });
+
+    expect(store.state.defaultLocale).toBe('en');
+  });
+});

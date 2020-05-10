@@ -1,12 +1,16 @@
 import { createStore } from '@stencil/store';
+import { bestLocale } from '../helpers/best-locale';
 
 type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
 type TranslationStore = Record<string, string>;
 
 export interface TranslatorOptions {
+  availableLocales?: readonly string[];
+  defaultLocale?: string;
   interpolateValues?: (str: string, interpolations: Record<string, string>) => string;
   keyWithPlural?: (key: string, pluralType: PluralType) => string;
   locale?: string;
+  localeList?: readonly string[];
   missingKey?: (key: string, translations: TranslationStore) => void;
   pluralFor: (number: number) => PluralType;
   translationForMissingKey?: (key: string, translations: TranslationStore) => string;
@@ -14,6 +18,8 @@ export interface TranslatorOptions {
 }
 
 const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor' | 'translations'>> = {
+  availableLocales: ['en'],
+  defaultLocale: 'en',
   interpolateValues: (str: string, interpolations: Record<string, string>): string =>
     str
       .replace(/\{([^}\s]+?)\}/, (match, id, offset) =>
@@ -22,15 +28,28 @@ const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor' | 'translatio
       .replace('\\{', '{'),
   keyWithPlural: (key: string, pluralType: PluralType) => `${key}.${pluralType}`,
   locale: 'en',
+  localeList: typeof navigator === 'undefined' ? ['en'] : navigator.languages ?? ['en'],
   missingKey: () => {},
   translationForMissingKey: key => `***${key}***`,
 };
 
-export const createI18nStore = (givenOptions: TranslatorOptions) => {
-  const store = createStore({
+const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> => {
+  const fullOptions = {
     ...defaultOptions,
-    ...givenOptions,
-  });
+    ...options,
+  };
+
+  fullOptions.defaultLocale = options.defaultLocale ?? fullOptions.availableLocales[0] ?? 'en';
+
+  fullOptions.locale =
+    options.locale ??
+    bestLocale(fullOptions.localeList, fullOptions.availableLocales, fullOptions.defaultLocale);
+
+  return fullOptions;
+};
+
+export const createI18nStore = (givenOptions: TranslatorOptions) => {
+  const store = createStore(fillOptions(givenOptions));
 
   let translations = createStore(givenOptions.translations);
 
