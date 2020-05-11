@@ -75,13 +75,23 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
   const onLocaleChanged = cb => store.onChange('locale', cb);
 
-  // Fetch translation
-  const fetchTranslations = async locale =>
-    (translations = createStore(await store.state.fetchLocale(locale)));
-  onLocaleChanged(fetchTranslations);
-  const waitUntilReady: Promise<void> = (async () => {
+  const locale = {
+    get: () => store.get('locale'),
+    set: async (newLocale: string, force = false) => {
+      if (newLocale === store.state.locale && !force) {
+        return;
+      }
+      loadTranslations(await store.state.fetchLocale(newLocale));
+      store.state.locale = newLocale;
+    },
+  };
+
+  // Fetch initial translation
+  // Luckily, better support for top-level await
+  // will arrive soon and we won't need this.
+  const waitUntilReady: Promise<void> = (() => {
     if (Object.keys(givenOptions.translations ?? {}).length === 0) {
-      await fetchTranslations(store.state.locale);
+      return locale.set(store.state.locale, true);
     }
   })();
 
@@ -91,6 +101,9 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     magicNumber?: number
   ): string => {
     const { get } = store;
+    // Subscribe to current locale value
+    get('locale');
+
     if (magicNumber !== undefined) {
       const pluralType = get('pluralFor')(magicNumber);
       key = get('keyWithPlural')(key, pluralType);
@@ -111,6 +124,7 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     addTranslations,
     hasKey,
     loadTranslations,
+    locale,
     onLocaleChanged,
     translate,
     store,
