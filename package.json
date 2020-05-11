@@ -1,6 +1,6 @@
 {
   "name": "stencil-internationalization-store",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
