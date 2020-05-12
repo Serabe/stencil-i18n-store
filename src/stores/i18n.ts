@@ -1,6 +1,7 @@
 import { getAssetPath } from '@stencil/core';
 import { createStore } from '@stencil/store';
 import { bestLocale } from '../helpers/best-locale';
+import { createLocale } from './locale';
 
 type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
 type TranslationStore = Record<string, string>;
@@ -56,7 +57,7 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
 };
 
 export const createI18nStore = (givenOptions: TranslatorOptions) => {
-  const store = createStore(fillOptions(givenOptions));
+  const options = fillOptions(givenOptions);
 
   let translations = createStore(givenOptions.translations ?? {});
 
@@ -73,25 +74,16 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
   const hasKey = (key: string) => key in translations.state;
 
-  const onLocaleChanged = cb => store.onChange('locale', cb);
-
-  const locale = {
-    get: () => store.get('locale'),
-    set: async (newLocale: string, force = false) => {
-      if (newLocale === store.state.locale && !force) {
-        return;
-      }
-      loadTranslations(await store.state.fetchLocale(newLocale));
-      store.state.locale = newLocale;
-    },
-  };
+  const locale = createLocale(options.locale, async newLocale => {
+    loadTranslations(await options.fetchLocale(newLocale));
+  });
 
   // Fetch initial translation
   // Luckily, better support for top-level await
   // will arrive soon and we won't need this.
   const waitUntilReady: Promise<void> = (() => {
     if (Object.keys(givenOptions.translations ?? {}).length === 0) {
-      return locale.set(store.state.locale, true);
+      return locale.set(locale.get(), true);
     }
   })();
 
@@ -100,24 +92,23 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     interpolations: Record<string, string> = {},
     magicNumber?: number
   ): string => {
-    const { get } = store;
     // Subscribe to current locale value
-    get('locale');
+    locale.get();
 
     if (magicNumber !== undefined) {
-      const pluralType = get('pluralFor')(magicNumber);
-      key = get('keyWithPlural')(key, pluralType);
+      const pluralType = options.pluralFor(magicNumber);
+      key = options.keyWithPlural(key, pluralType);
     }
 
     if (key in translations.state) {
       const translatedValue = translations.get(key);
 
-      return get('interpolateValues')(translatedValue, interpolations);
+      return options.interpolateValues(translatedValue, interpolations);
     }
 
-    get('missingKey')(key, translations.state);
+    options.missingKey(key, translations.state);
 
-    return get('translationForMissingKey')(key, translations.state);
+    return options.translationForMissingKey(key, translations.state);
   };
 
   return {
@@ -125,9 +116,7 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     hasKey,
     loadTranslations,
     locale,
-    onLocaleChanged,
     translate,
-    store,
     waitUntilReady,
   };
 };

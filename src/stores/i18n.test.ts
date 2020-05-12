@@ -283,13 +283,14 @@ describe('addTranslations', () => {
   });
 });
 
+/* */
 describe('locale option', () => {
   beforeEach(() => {
     fetchMock.mockResponse('{}');
   });
 
   test('if locale is passed as option, that one is the locale', async () => {
-    const { store, waitUntilReady } = createI18nStore({
+    const { locale, waitUntilReady } = createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -299,11 +300,11 @@ describe('locale option', () => {
     });
     await waitUntilReady;
 
-    expect(store.state.locale).toBe('pt');
+    expect(locale.get()).toBe('pt');
   });
 
   test('guess from options which is the best locale', async () => {
-    const { store, waitUntilReady } = createI18nStore({
+    const { locale, waitUntilReady } = createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -312,11 +313,11 @@ describe('locale option', () => {
     });
     await waitUntilReady;
 
-    expect(store.state.locale).toBe('es');
+    expect(locale.get()).toBe('es');
   });
 
   test('guess from options which is the best locale', async () => {
-    const { store, waitUntilReady } = createI18nStore({
+    const { locale, waitUntilReady } = createI18nStore({
       pluralFor,
       translations: {},
       availableLocales: ['en', 'es'],
@@ -325,31 +326,7 @@ describe('locale option', () => {
     });
     await waitUntilReady;
 
-    expect(store.state.locale).toBe('es');
-  });
-
-  test('if defaultLocale is not passed, take the first from the availableLocales array', async () => {
-    const { store, waitUntilReady } = createI18nStore({
-      pluralFor,
-      translations: {},
-      availableLocales: ['fr', 'en', 'es'],
-      localeList: ['es', 'en'],
-    });
-    await waitUntilReady;
-
-    expect(store.state.defaultLocale).toBe('fr');
-  });
-
-  test('if defaultLocale is not passed and there are no availableLocales, use "en"', async () => {
-    const { store, waitUntilReady } = createI18nStore({
-      pluralFor,
-      translations: {},
-      availableLocales: [],
-      localeList: ['es', 'en'],
-    });
-    await waitUntilReady;
-
-    expect(store.state.defaultLocale).toBe('en');
+    expect(locale.get()).toBe('es');
   });
 });
 
