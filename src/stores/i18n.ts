@@ -2,23 +2,7 @@ import { getAssetPath } from '@stencil/core';
 import { createStore } from '@stencil/store';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
-
-type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
-type TranslationStore = Record<string, string>;
-
-export interface TranslatorOptions {
-  availableLocales?: readonly string[];
-  defaultLocale?: string;
-  fetchLocale?: (locale: string) => Promise<Record<string, string>>;
-  interpolateValues?: (str: string, interpolations: Record<string, string>) => string;
-  keyWithPlural?: (key: string, pluralType: PluralType) => string;
-  locale?: string;
-  localeList?: readonly string[];
-  missingKey?: (key: string, translations: TranslationStore) => void;
-  pluralFor: (number: number) => PluralType;
-  translationForMissingKey?: (key: string, translations: TranslationStore) => string;
-  translations?: TranslationStore;
-}
+import { TranslatorOptions, PluralType } from './types';
 
 const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor'>> = {
   availableLocales: ['en'],
