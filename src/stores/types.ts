@@ -57,17 +57,20 @@ export interface TranslatorOptions {
    * ```
    */
   keyWithPlural?: (key: string, pluralType: PluralType) => string;
+
   /**
    * Locale to use. If passed, it will be used over the best fit
    * for the available locales and locale list.
    */
   locale?: string;
+
   /**
    * List of possible locales to use for current user.
    * If not locale is passed, the locale will be determined by
    * availableLocales, defaultLocale, and localeList.
    */
   localeList?: readonly string[];
+
   /**
    * Callback called when a key is not presents in the translations.
    *
@@ -80,15 +83,18 @@ export interface TranslatorOptions {
    * }
    */
   missingKey?: (key: string, translations: TranslationStore) => void;
+
   /**
    * Returns the plural type for the given number.
    */
   pluralFor: (number: number) => PluralType;
+
   /**
    * Return the translation to use when the key is not in
    * the loaded translations.
    */
   translationForMissingKey?: (key: string, translations: TranslationStore) => string;
+
   /**
    * An initial set of translations can be passed. If you chose to do
    * so, the initial fetch won't happen.
