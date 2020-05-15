@@ -31,6 +31,7 @@ export interface TranslatorOptions {
    * ```
    */
   fetchLocale?: (locale: string) => Promise<Record<string, string>>;
+
   /**
    * How to interpolate the values in the given string.
    *
@@ -73,6 +74,13 @@ export interface TranslatorOptions {
 
   /**
    * Returns the plural type for the given number.
+   *
+   * @example
+   * ```ts
+   * const config = {
+   *   pluralFor: (locale, n) => new Intl.PluralRules(locale).select(n),
+   * }
+   * ```
    */
   pluralFor: (locale: string, number: number) => PluralType;
 
