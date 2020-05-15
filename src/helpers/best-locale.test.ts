@@ -8,4 +8,8 @@ describe('bestLocale', () => {
   test('if the best language is a localization of one of the available languages, choose it over a later version', () => {
     expect(bestLocale(['es-ES', 'en'], ['en', 'es'], 'en')).toBe('es');
   });
+
+  test('if the region neutral locale satisfies the criteria', () => {
+    expect(bestLocale(['pt-BR', 'es-ES'], ['en', 'es'], 'en')).toBe('es');
+  });
 });
