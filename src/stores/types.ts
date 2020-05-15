@@ -56,7 +56,7 @@ export interface TranslatorOptions {
    * }
    * ```
    */
-  keyWithPlural?: (key: string, pluralType: PluralType) => string;
+  keyWithPlural?: (locale: string, key: string, pluralType: PluralType) => string;
 
   /**
    * Locale to use. If passed, it will be used over the best fit
@@ -77,23 +77,27 @@ export interface TranslatorOptions {
    * @example
    * ```ts
    * const config = {
-   *   missingKey: (key, translations) => {
-   *     sendBeacon(`/translations/error/${key}`);
+   *   missingKey: (locale, key, translations) => {
+   *     sendBeacon(`/translations/${locale}/error/${key}`);
    *   }
    * }
    */
-  missingKey?: (key: string, translations: TranslationStore) => void;
+  missingKey?: (locale: string, key: string, translations: TranslationStore) => void;
 
   /**
    * Returns the plural type for the given number.
    */
-  pluralFor: (number: number) => PluralType;
+  pluralFor: (locale: string, number: number) => PluralType;
 
   /**
    * Return the translation to use when the key is not in
    * the loaded translations.
    */
-  translationForMissingKey?: (key: string, translations: TranslationStore) => string;
+  translationForMissingKey?: (
+    locale: string,
+    key: string,
+    translations: TranslationStore
+  ) => string;
 
   /**
    * An initial set of translations can be passed. If you chose to do

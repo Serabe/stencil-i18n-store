@@ -4,7 +4,7 @@ import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
 import { TranslatorOptions, PluralType } from './types';
 
-const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor'>> = {
+const defaultOptions: Required<TranslatorOptions> = {
   availableLocales: ['en'],
   defaultLocale: 'en',
   fetchLocale: async (locale: string): Promise<Record<string, string>> => {
@@ -17,12 +17,13 @@ const defaultOptions: Required<Omit<TranslatorOptions, 'pluralFor'>> = {
         str.charAt(offset - 1) === '\\' ? match : interpolations[id]
       )
       .replace('\\{', '{'),
-  keyWithPlural: (key: string, pluralType: PluralType) => `${key}.${pluralType}`,
+  keyWithPlural: (_, key: string, pluralType: PluralType) => `${key}.${pluralType}`,
   locale: 'en',
   localeList: typeof navigator === 'undefined' ? ['en'] : navigator.languages ?? ['en'],
   missingKey: () => {},
+  pluralFor: (locale: string, n: number) => new Intl.PluralRules(locale).select(n),
   translations: {},
-  translationForMissingKey: key => `***${key}***`,
+  translationForMissingKey: (_, key) => `***${key}***`,
 };
 
 const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> => {
@@ -77,11 +78,11 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     magicNumber?: number
   ): string => {
     // Subscribe to current locale value
-    locale.get();
+    const currentLocale = locale.get();
 
     if (magicNumber !== undefined) {
-      const pluralType = options.pluralFor(magicNumber);
-      key = options.keyWithPlural(key, pluralType);
+      const pluralType = options.pluralFor(currentLocale, magicNumber);
+      key = options.keyWithPlural(currentLocale, key, pluralType);
     }
 
     if (key in translations.state) {
@@ -90,9 +91,9 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
       return options.interpolateValues(translatedValue, interpolations);
     }
 
-    options.missingKey(key, translations.state);
+    options.missingKey(currentLocale, key, translations.state);
 
-    return options.translationForMissingKey(key, translations.state);
+    return options.translationForMissingKey(currentLocale, key, translations.state);
   };
 
   return {

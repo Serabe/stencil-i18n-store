@@ -1,7 +1,7 @@
 import 'jest-fetch-mock';
 import { createI18nStore } from './i18n';
 
-const pluralFor = number => {
+const pluralFor = (_, number) => {
   switch (number) {
     case 0:
       return 'zero';
@@ -36,11 +36,13 @@ describe('translate', () => {
   });
 
   it('calls translationForMissingKey and returns its value if key is not found', async () => {
+    const locale = 'pt';
     const key = 'THIS.KEY.DOES.NOT.EXIST';
     const translation = 'Mahna mahna';
     const translationForMissingKey = jest.fn().mockReturnValue(translation);
     const translations = { key: 'value' };
     const { translate, waitUntilReady } = createI18nStore({
+      locale,
       pluralFor,
       translations,
       translationForMissingKey,
@@ -50,14 +52,16 @@ describe('translate', () => {
     expect(translate(key)).toBe(translation);
 
     expect(translationForMissingKey).toHaveBeenCalledTimes(1);
-    expect(translationForMissingKey).toHaveBeenCalledWith(key, translations);
+    expect(translationForMissingKey).toHaveBeenCalledWith(locale, key, translations);
   });
 
   it('calls missing key if the key is not found', async () => {
     const key = 'THIS.KEY.DOES.NOT.EXIST';
+    const locale = 'fr';
     const missingKey = jest.fn();
     const translations = { key: 'value' };
     const { translate, waitUntilReady } = createI18nStore({
+      locale,
       pluralFor,
       missingKey,
       translations,
@@ -67,7 +71,7 @@ describe('translate', () => {
     translate(key);
 
     expect(missingKey).toHaveBeenCalledTimes(1);
-    expect(missingKey).toHaveBeenCalledWith(key, translations);
+    expect(missingKey).toHaveBeenCalledWith(locale, key, translations);
   });
 
   it('interpolates values inside curly braces by default', async () => {
@@ -108,9 +112,11 @@ describe('translate', () => {
   });
 
   it('calls pluralFor if a magic number is passed', async () => {
+    const locale = 'zh';
     const pluralFor = jest.fn().mockReturnValue('few');
 
     const { translate, waitUntilReady } = createI18nStore({
+      locale,
       pluralFor,
       translations: {
         KEY: 'Hello, {name}',
@@ -121,14 +127,16 @@ describe('translate', () => {
     translate('KEY', {}, 2);
 
     expect(pluralFor).toHaveBeenCalledTimes(1);
-    expect(pluralFor).toHaveBeenCalledWith(2);
+    expect(pluralFor).toHaveBeenCalledWith(locale, 2);
   });
 
   it('calls keyWithPlural with key and pluralType returned by pluralFor if a given magic number is passed', async () => {
+    const locale = 'it';
     const pluralFor = jest.fn().mockReturnValue('other');
     const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
     const { translate, waitUntilReady } = createI18nStore({
+      locale,
       keyWithPlural,
       pluralFor,
       translations: {
@@ -140,7 +148,7 @@ describe('translate', () => {
     translate('KEY', {}, 2);
 
     expect(keyWithPlural).toHaveBeenCalledTimes(1);
-    expect(keyWithPlural).toHaveBeenCalledWith('KEY', 'other');
+    expect(keyWithPlural).toHaveBeenCalledWith(locale, 'KEY', 'other');
   });
 
   it('uses the key returned by keyWithPlural if one is found', async () => {
@@ -216,7 +224,7 @@ describe('loadTranslations', () => {
   test('removes old translations', async () => {
     const { loadTranslations, translate, waitUntilReady } = createI18nStore({
       pluralFor,
-      translationForMissingKey(key) {
+      translationForMissingKey(_, key) {
         return `Missing key: ${key}`;
       },
       translations: {
