@@ -5,7 +5,8 @@
     "declaration": true,
     "experimentalDecorators": true,
     "lib": ["dom", "es2017", "es2018", "es2019"],
-    "outDir": "dist",
+    "outDir": "build",
+    "declarationDir": "dist",
     "moduleResolution": "node",
     "module": "esnext",
     "target": "es2017",
@@ -14,6 +15,6 @@
     "jsx": "react",
     "jsxFactory": "h"
   },
-  "include": ["src/**/*.ts"],
+  "files": ["src/index.ts"],
   "exclude": ["node_modules", "src/**/*.(test|spec).ts"]
 }
