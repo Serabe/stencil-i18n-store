@@ -1,7 +1,7 @@
 import { getAssetPath } from '@stencil/core';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
-import { TranslatorOptions, PluralType } from './types';
+import { TranslatorOptions, PluralType, Translate, LocaleWillUpdateHandler } from './types';
 
 const defaultOptions: Required<TranslatorOptions> = {
   availableLocales: ['en'],
@@ -42,6 +42,8 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
 export const createI18nStore = (givenOptions: TranslatorOptions) => {
   const options = fillOptions(givenOptions);
 
+  const onLocaleWillUpdateHandlers = [];
+
   let translations = givenOptions.translations ?? {};
 
   const loadTranslations = (newTranslations: Record<string, string>) => {
@@ -59,7 +61,11 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
   const locale = createLocale(options.locale, async newLocale => {
     loadTranslations(await options.fetchLocale(newLocale));
+    const t: Translate = (...args) => translate(newLocale, ...args);
+    onLocaleWillUpdateHandlers.forEach(cb => cb(t, hasKey));
   });
+
+  const onLocaleWillUpdate = (cb: LocaleWillUpdateHandler) => onLocaleWillUpdateHandlers.push(cb);
 
   // Fetch initial translation
   // Luckily, better support for top-level await
@@ -71,13 +77,11 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
   })();
 
   const translate = (
+    currentLocale: string,
     key: string,
     interpolations: Record<string, string> = {},
     magicNumber?: number
   ): string => {
-    // Subscribe to current locale value
-    const currentLocale = locale.get();
-
     if (magicNumber !== undefined) {
       const pluralType = options.pluralFor(currentLocale, magicNumber);
       key = options.keyWithPlural(currentLocale, key, pluralType);
@@ -93,11 +97,50 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
   };
 
   return {
+    /**
+     * Add translations without removing the previous set (though it might override).
+     */
     addTranslations,
+
+    /**
+     * Check if a key is present in the loaded translations.
+     */
     hasKey,
+
+    /**
+     * Loads the new set of translations removing the previous set.
+     */
     loadTranslations,
+
+    /**
+     * Current locale store.
+     */
     locale,
-    translate,
+
+    /**
+     * This hooks are called when the translations for the new locale
+     * are already loaded but before the new locale is set.
+     *
+     * This method is rarely useful, but when you need to sync i18n-store
+     * with another system.
+     *
+     * Except for counted exceptions, this is quite likely the wrong option.
+     */
+    onLocaleWillUpdate,
+
+    /**
+     * Translates the given key with the given interpolations.
+     *
+     * It can also pluralize.
+     */
+    translate: (key: string, interpolations?: Record<string, any>, magicNumber?: number) =>
+      translate(locale.get(), key, interpolations, magicNumber),
+
+    /**
+     * Promise resolved when the first set of translations are loaded.
+     *
+     * When top-level awaits are better supported, this will go.
+     */
     waitUntilReady,
   };
 };
