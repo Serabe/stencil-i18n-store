@@ -1,5 +1,4 @@
 import { getAssetPath } from '@stencil/core';
-import { createStore } from '@stencil/store';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
 import { TranslatorOptions, PluralType } from './types';
@@ -43,20 +42,20 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
 export const createI18nStore = (givenOptions: TranslatorOptions) => {
   const options = fillOptions(givenOptions);
 
-  let translations = createStore(givenOptions.translations ?? {});
+  let translations = givenOptions.translations ?? {};
 
   const loadTranslations = (newTranslations: Record<string, string>) => {
-    translations = createStore(newTranslations);
+    translations = newTranslations;
   };
 
   const addTranslations = (newTranslations: Record<string, string>) => {
     loadTranslations({
-      ...translations.state,
+      ...translations,
       ...newTranslations,
     });
   };
 
-  const hasKey = (key: string) => key in translations.state;
+  const hasKey = (key: string) => key in translations;
 
   const locale = createLocale(options.locale, async newLocale => {
     loadTranslations(await options.fetchLocale(newLocale));
@@ -84,13 +83,13 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
       key = options.keyWithPlural(currentLocale, key, pluralType);
     }
 
-    if (key in translations.state) {
-      const translatedValue = translations.get(key);
+    if (key in translations) {
+      const translatedValue = translations[key];
 
       return options.interpolateValues(translatedValue, interpolations);
     }
 
-    return options.translationForMissingKey(currentLocale, key, translations.state);
+    return options.translationForMissingKey(currentLocale, key, translations);
   };
 
   return {
