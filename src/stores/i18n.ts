@@ -20,7 +20,6 @@ const defaultOptions: Required<TranslatorOptions> = {
   keyWithPlural: (_, key: string, pluralType: PluralType) => `${key}.${pluralType}`,
   locale: 'en',
   localeList: typeof navigator === 'undefined' ? ['en'] : navigator.languages ?? ['en'],
-  missingKey: () => {},
   pluralFor: (locale: string, n: number) => new Intl.PluralRules(locale).select(n),
   translations: {},
   translationForMissingKey: (_, key) => `***${key}***`,
@@ -90,8 +89,6 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
       return options.interpolateValues(translatedValue, interpolations);
     }
-
-    options.missingKey(currentLocale, key, translations.state);
 
     return options.translationForMissingKey(currentLocale, key, translations.state);
   };

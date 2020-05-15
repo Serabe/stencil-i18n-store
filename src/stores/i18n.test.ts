@@ -55,25 +55,6 @@ describe('translate', () => {
     expect(translationForMissingKey).toHaveBeenCalledWith(locale, key, translations);
   });
 
-  it('calls missing key if the key is not found', async () => {
-    const key = 'THIS.KEY.DOES.NOT.EXIST';
-    const locale = 'fr';
-    const missingKey = jest.fn();
-    const translations = { key: 'value' };
-    const { translate, waitUntilReady } = createI18nStore({
-      locale,
-      pluralFor,
-      missingKey,
-      translations,
-    });
-    await waitUntilReady;
-
-    translate(key);
-
-    expect(missingKey).toHaveBeenCalledTimes(1);
-    expect(missingKey).toHaveBeenCalledWith(locale, key, translations);
-  });
-
   it('interpolates values inside curly braces by default', async () => {
     const { translate, waitUntilReady } = createI18nStore({
       pluralFor,

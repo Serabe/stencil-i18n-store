@@ -72,19 +72,6 @@ export interface TranslatorOptions {
   localeList?: readonly string[];
 
   /**
-   * Callback called when a key is not presents in the translations.
-   *
-   * @example
-   * ```ts
-   * const config = {
-   *   missingKey: (locale, key, translations) => {
-   *     sendBeacon(`/translations/${locale}/error/${key}`);
-   *   }
-   * }
-   */
-  missingKey?: (locale: string, key: string, translations: TranslationStore) => void;
-
-  /**
    * Returns the plural type for the given number.
    */
   pluralFor: (locale: string, number: number) => PluralType;
