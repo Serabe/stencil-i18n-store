@@ -1,10 +1,18 @@
 import { createStore } from '@stencil/store';
 
 export const createLocale = (
-  initialValue: string,
+  initialValue: string = typeof document === 'undefined'
+    ? 'en'
+    : document?.children?.[0]?.getAttribute('lang'),
   beforeUpdate: (newLocale: string) => Promise<void> = async () => {}
 ) => {
-  const { get, set, onChange } = createStore({ value: initialValue });
+  const { get, set, onChange: originalOnChange } = createStore({ value: initialValue });
+
+  const onChange = cb => originalOnChange('value', cb);
+
+  if (typeof document !== 'undefined') {
+    onChange(locale => document.children?.[0]?.setAttribute('lang', locale));
+  }
 
   return {
     get: () => get('value'),
@@ -15,6 +23,6 @@ export const createLocale = (
       await beforeUpdate(newLocale);
       set('value', newLocale);
     },
-    onChange: cb => onChange('value', cb),
+    onChange,
   };
 };
