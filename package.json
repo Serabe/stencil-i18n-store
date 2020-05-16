@@ -12,10 +12,11 @@
     "lint.prettier": "node_modules/.bin/prettier --write 'src/**/*.ts'",
     "release": "np",
     "rollup": "rollup -c rollup.config.js",
-    "test": "jest",
+    "test": "npm run test.project && npm run test:app",
     "test:app": "scripty",
     "test.ci": "npm run test && npm run test.prettier && npm run test:app",
     "test.prettier": "node_modules/.bin/prettier --check 'src/**/*.ts'",
+    "test.project": "jest",
     "version": "npm run build"
   },
   "keywords": [
