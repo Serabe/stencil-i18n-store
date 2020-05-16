@@ -1,10 +1,6 @@
-export const bestLocale: (
-  localeList: ReadonlyArray<string>,
-  availableLocales?: ReadonlyArray<string>,
-  defaultLocale?: string
-) => string = (
-  localeList: ReadonlyArray<string>,
-  availableLocales: ReadonlyArray<string>,
+export const bestLocale = (
+  localeList: readonly string[],
+  availableLocales: readonly string[],
   defaultLocale: string
 ): string => {
   for (const locale of localeList) {
