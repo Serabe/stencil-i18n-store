@@ -1,7 +1,7 @@
 import { getAssetPath } from '@stencil/core';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
-import { TranslatorOptions, PluralType, Translate, LocaleWillUpdateHandler } from './types';
+import { TranslatorOptions, PluralType } from './types';
 
 const defaultOptions: Required<TranslatorOptions> = {
   availableLocales: ['en'],
@@ -42,8 +42,6 @@ const fillOptions = (options: TranslatorOptions): Required<TranslatorOptions> =>
 export const createI18nStore = (givenOptions: TranslatorOptions) => {
   const options = fillOptions(givenOptions);
 
-  const onLocaleWillUpdateHandlers = [];
-
   let translations = givenOptions.translations ?? {};
 
   const loadTranslations = (newTranslations: Record<string, string>) => {
@@ -61,11 +59,7 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
 
   const locale = createLocale(options.locale, async newLocale => {
     loadTranslations(await options.fetchLocale(newLocale));
-    const t: Translate = (...args) => translate(newLocale, ...args);
-    onLocaleWillUpdateHandlers.forEach(cb => cb(t, hasKey));
   });
-
-  const onLocaleWillUpdate = (cb: LocaleWillUpdateHandler) => onLocaleWillUpdateHandlers.push(cb);
 
   // Fetch initial translation
   // Luckily, better support for top-level await
@@ -116,17 +110,6 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
      * Current locale store.
      */
     locale,
-
-    /**
-     * This hooks are called when the translations for the new locale
-     * are already loaded but before the new locale is set.
-     *
-     * This method is rarely useful, but when you need to sync i18n-store
-     * with another system.
-     *
-     * Except for counted exceptions, this is quite likely the wrong option.
-     */
-    onLocaleWillUpdate,
 
     /**
      * Translates the given key with the given interpolations.

@@ -7,14 +7,6 @@
 export type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other' | string;
 export type TranslationStore = Record<string, string>;
 
-export type Translate = (
-  key: string,
-  interpolations?: Record<string, string>,
-  magicNumber?: number
-) => string;
-export type HasKey = (key: string) => boolean;
-
-export type LocaleWillUpdateHandler = (translate: Translate, hasKey: HasKey) => void;
 export interface TranslatorOptions {
   /**
    * List of available locales for the application.
