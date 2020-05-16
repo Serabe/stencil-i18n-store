@@ -1,15 +1,13 @@
 import { getAssetPath } from '@stencil/core';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
-import { TranslatorOptions, PluralType } from './types';
+import { TranslatorOptions, PluralType, TranslateFn } from './types';
 
 const defaultOptions: Required<TranslatorOptions> = {
   availableLocales: ['en'],
   defaultLocale: 'en',
-  fetchLocale: async (locale: string): Promise<Record<string, string>> => {
-    const response = await fetch(getAssetPath(`/assets/locales/${locale}.json`));
-    return response.json();
-  },
+  fetchLocale: async (locale: string): Promise<Record<string, string>> =>
+    (await fetch(getAssetPath(`/assets/locales/${locale}.json`))).json(),
   interpolateValues: (str: string, interpolations: Record<string, string>): string =>
     str
       .replace(/\{([^}\s]+?)\}/, (match, id, offset) =>
@@ -70,12 +68,16 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
     }
   })();
 
-  const translate = (
-    currentLocale: string,
+  const translate: TranslateFn = (
     key: string,
-    interpolations: Record<string, string> = {},
-    magicNumber?: number
+    intOrNumber?: Record<string, string> | number,
+    maybeMagicNumber?: number
   ): string => {
+    const currentLocale = locale.get();
+
+    const [interpolations, magicNumber] =
+      typeof intOrNumber === 'number' ? [{}, intOrNumber] : [intOrNumber, maybeMagicNumber];
+
     if (magicNumber !== undefined) {
       const pluralType = options.pluralFor(currentLocale, magicNumber);
       key = options.keyWithPlural(currentLocale, key, pluralType);
@@ -116,8 +118,7 @@ export const createI18nStore = (givenOptions: TranslatorOptions) => {
      *
      * It can also pluralize.
      */
-    translate: (key: string, interpolations?: Record<string, any>, magicNumber?: number) =>
-      translate(locale.get(), key, interpolations, magicNumber),
+    translate,
 
     /**
      * Promise resolved when the first set of translations are loaded.

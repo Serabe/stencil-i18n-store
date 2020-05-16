@@ -7,6 +7,11 @@
 export type PluralType = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other' | string;
 export type TranslationStore = Record<string, string>;
 
+export interface TranslateFn {
+  (key: string): string;
+  (key: string, magicNumber: number): string;
+  (key: string, interpolations: Record<string, string>, magicNumber?: number): string;
+}
 export interface TranslatorOptions {
   /**
    * List of available locales for the application.

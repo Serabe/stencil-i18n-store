@@ -8,13 +8,11 @@ export const bestLocale = (
       return locale;
     }
 
-    if (locale.length === 2) {
-      continue;
-    }
-
-    const regionNeutralLocale = locale.substr(0, 2);
-    if (availableLocales.includes(regionNeutralLocale)) {
-      return regionNeutralLocale;
+    if (locale.length > 2) {
+      const regionNeutralLocale = locale.substr(0, 2);
+      if (availableLocales.includes(regionNeutralLocale)) {
+        return regionNeutralLocale;
+      }
     }
   }
 

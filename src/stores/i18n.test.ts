@@ -69,59 +69,67 @@ describe('translate', () => {
     expect(translate('KEY', { 'my name': 'Sergio' })).toBe('Hello, {my name}');
   });
 
-  it('calls pluralFor if a magic number is passed', async () => {
-    const locale = 'zh';
-    const pluralFor = jest.fn().mockReturnValue('few');
+  describe.each([
+    ['plural and interpolations', number => [{}, number]],
+    ['plural without interpolations', number => [number]],
+  ])('%s', (_, toArgs: (n: number) => [Record<string, string>, number] | [number]) => {
+    it('calls pluralFor if a magic number is passed', async () => {
+      const locale = 'zh';
+      const pluralFor = jest.fn().mockReturnValue('few');
 
-    const { translate } = await createI18nStore({
-      locale,
-      pluralFor,
-      translations: {
-        KEY: 'Hello, {name}',
-      },
+      const { translate } = await createI18nStore({
+        locale,
+        pluralFor,
+        translations: {
+          KEY: 'Hello, {name}',
+        },
+      });
+
+      // @ts-ignore
+      translate('KEY', ...toArgs(2));
+
+      expect(pluralFor).toHaveBeenCalledTimes(1);
+      expect(pluralFor).toHaveBeenCalledWith(locale, 2);
     });
 
-    translate('KEY', {}, 2);
+    it('calls keyWithPlural with key and pluralType returned by pluralFor if a given magic number is passed', async () => {
+      const locale = 'it';
+      const pluralFor = jest.fn().mockReturnValue('other');
+      const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
-    expect(pluralFor).toHaveBeenCalledTimes(1);
-    expect(pluralFor).toHaveBeenCalledWith(locale, 2);
-  });
+      const { translate } = await createI18nStore({
+        locale,
+        keyWithPlural,
+        pluralFor,
+        translations: {
+          KEY: 'Hello, {name}',
+        },
+      });
 
-  it('calls keyWithPlural with key and pluralType returned by pluralFor if a given magic number is passed', async () => {
-    const locale = 'it';
-    const pluralFor = jest.fn().mockReturnValue('other');
-    const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
+      // @ts-ignore
+      translate('KEY', ...toArgs(2));
 
-    const { translate } = await createI18nStore({
-      locale,
-      keyWithPlural,
-      pluralFor,
-      translations: {
-        KEY: 'Hello, {name}',
-      },
+      expect(keyWithPlural).toHaveBeenCalledTimes(1);
+      expect(keyWithPlural).toHaveBeenCalledWith(locale, 'KEY', 'other');
     });
 
-    translate('KEY', {}, 2);
+    it('uses the key returned by keyWithPlural if one is found', async () => {
+      const pluralFor = jest.fn().mockReturnValue('other');
+      const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
 
-    expect(keyWithPlural).toHaveBeenCalledTimes(1);
-    expect(keyWithPlural).toHaveBeenCalledWith(locale, 'KEY', 'other');
-  });
+      const { translate } = await createI18nStore({
+        keyWithPlural,
+        pluralFor,
+        translations: {
+          'KEY.zero': 'Sorry',
+          'KEY.one': 'Ciao',
+          'KEY.other': 'Hello',
+        },
+      });
 
-  it('uses the key returned by keyWithPlural if one is found', async () => {
-    const pluralFor = jest.fn().mockReturnValue('other');
-    const keyWithPlural = jest.fn().mockReturnValue('KEY.other');
-
-    const { translate } = await createI18nStore({
-      keyWithPlural,
-      pluralFor,
-      translations: {
-        'KEY.zero': 'Sorry',
-        'KEY.one': 'Ciao',
-        'KEY.other': 'Hello',
-      },
+      // @ts-ignore
+      expect(translate('KEY', ...toArgs(2))).toBe('Hello');
     });
-
-    expect(translate('KEY', {}, 2)).toBe('Hello');
   });
 
   it('still interpolates given a magic number', async () => {
