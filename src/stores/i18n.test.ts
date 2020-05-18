@@ -49,6 +49,21 @@ describe('translate', () => {
     expect(translate('KEY', { name: 'Manu' })).toBe('Hello, Manu');
   });
 
+  it('interpolates several values inside curly braces by default', async () => {
+    const { translate } = await createI18nStore({
+      translations: {
+        KEY: 'Hello, {name}, {adjective} to meet you!',
+      },
+    });
+
+    expect(translate('KEY', { name: 'Sergio', adjective: 'glad' })).toBe(
+      'Hello, Sergio, glad to meet you!'
+    );
+    expect(translate('KEY', { name: 'Manu', adjective: 'happy' })).toBe(
+      'Hello, Manu, happy to meet you!'
+    );
+  });
+
   it('does not interpolate if the first curly brace has a \\ before it', async () => {
     const { translate } = await createI18nStore({
       translations: {

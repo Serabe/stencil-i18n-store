@@ -10,7 +10,7 @@ const defaultOptions: Required<TranslatorOptions> = {
     (await fetch(getAssetPath(`/assets/locales/${locale}.json`))).json(),
   interpolateValues: (str: string, interpolations: Record<string, string>): string =>
     str
-      .replace(/\{([^}\s]+?)\}/, (match, id, offset) =>
+      .replace(/\{([^}\s]+?)\}/g, (match, id, offset) =>
         str.charAt(offset - 1) === '\\' ? match : interpolations[id]
       )
       .replace('\\{', '{'),
