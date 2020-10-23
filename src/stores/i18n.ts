@@ -3,7 +3,7 @@ import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
 import { TranslatorOptions, PluralType, TranslateFn } from './types';
 
-const fetchLocale = Build.isTesting
+const fetchLocale = Build?.isTesting
   ? async () => ({})
   : async (locale: string): Promise<Record<string, string>> =>
       (await fetch(getAssetPath(`/assets/locales/${locale}.json`))).json();
