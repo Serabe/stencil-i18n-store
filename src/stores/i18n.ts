@@ -1,13 +1,17 @@
-import { getAssetPath } from '@stencil/core';
+import { Build, getAssetPath } from '@stencil/core';
 import { bestLocale } from '../helpers/best-locale';
 import { createLocale } from './locale';
 import { TranslatorOptions, PluralType, TranslateFn } from './types';
 
+const fetchLocale = Build?.isTesting
+  ? async () => ({})
+  : async (locale: string): Promise<Record<string, string>> =>
+      (await fetch(getAssetPath(`/assets/locales/${locale}.json`))).json();
+
 const defaultOptions: Required<TranslatorOptions> = {
   availableLocales: ['en'],
   defaultLocale: 'en',
-  fetchLocale: async (locale: string): Promise<Record<string, string>> =>
-    (await fetch(getAssetPath(`/assets/locales/${locale}.json`))).json(),
+  fetchLocale,
   interpolateValues: (str: string, interpolations: Record<string, string>): string =>
     str
       .replace(/\{([^}\s]+?)\}/g, (match, id, offset) =>
