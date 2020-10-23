@@ -40,14 +40,6 @@ export interface TranslatorOptions {
   /**
    * How to interpolate the values in the given string.
    *
-   * @example
-   * ```ts
-   * const config = {
-   *   interpolateValues: (str, interpolations) => {
-   *     return str.replace(/@@(.*?)@@/, (, match) => interpolations[match]);
-   *   }
-   * }
-   * ```
    */
   interpolateValues?: (str: string, interpolations: Record<string, string>) => string;
 

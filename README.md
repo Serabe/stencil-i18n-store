@@ -55,6 +55,54 @@ Translation files are just JSON files. The JSON needs to be a `Record<string, st
 
 ## Config
 
+### `availableLocales?: readonly string[]`
+
+List of locales available in your application. Defaults to `['en']`.
+
+### `defaultLocale?: string`
+
+Default locale to use. Defaults to `'en'`.
+
+### `fetchLocale?: (locale: string) => Promise<Record<string, string>>`
+
+Tells stencil-i18n-store how to load the given locale. By default, it will load the JSON from `'/src/assets/locales/'` with the same name as the locale and the extension `json`. For example, `fetchLocale('en')` will try to load the locale from `/assets/locales/en.json`.
+
+If you are running tests, `fetchLocale` will return an empty object (no translations at all).
+
+### `interpolateValues?: (str: string, interpolations: Record<string, string>) => string`
+
+This function receives a localized string and a map of values to interpolate.
+By default, interpolated values are surrounded by curly braces like this: `{someValue}`.
+By default, this function will look for `someValue` in the `interpolations` record and use that value
+to replace the `{someValue}`.
+
+You can write curly braces my prefixing the starting one with a backslash `\{this won't be looked up}`.
+
+### `keyWithPlural: (locale: string, key: string, pluralType: 'zero' | 'one' | 'two' | 'few' | 'many' | 'other' | string) => string`
+
+Returns the key to use given the base key and the plural type. When using the pluralization system, this is the function in charge of creating the actual key to be used.
+
+If current locale is `'en'` and the plural type is `'many'`, a key like `'my.key` would be transformed into `'my.key.many'` by default. Then, `stencil-i18n-store` will look for `'my.key.many'` in the translations store.
+
+### `locale: string`
+
+In case you want to force a locale.
+
+### `localeList: string[]`
+
+The list of available locales in the user's system. By default it is `navigator.languages ?? ['en']`.
+
+### `pluralFor: (locale: string, n: number) => 'zero' | 'one' | 'two' | 'few' | 'many' | 'other' | string`
+
+Given a locale an a number, returns the plural type to use. Currently, `stencil-i18n-store` does not use this information, it is just passed to `keyWithPlural`.
+
+### `translations: Record<string, string>`
+
+You can pass the translations to use in case you have them preloaded.
+
+### `translationForMissingKey: (locale: string, key: string) => string`
+
+Returns the localized string to use should the key not be found in the translations.
 
 ## Advanced Usage
 
