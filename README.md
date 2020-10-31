@@ -104,6 +104,36 @@ You can pass the translations to use in case you have them preloaded.
 
 Returns the localized string to use should the key not be found in the translations.
 
+## API
+
+`createI18nStore` expects some options (described above) and returns an object with the following fields:
+
+### `addTranslations: (newTranslations: Record<string, string>) => void`
+
+This method allows the user to add translations without removing the current ones, though it might override some of them.
+
+### `hasKey: (key: string) => boolean`
+
+Check if a given key is present in translations.
+
+### `loadTranslations: (newTranslations: Record<string, string>) => void`
+
+Behaves like `addTranslations` but `loadTranslations` does remove previous translations.
+
+### `locale: localeStore`
+
+Provide a locale store where you can `get(): string` the locale, `set(newLocale: string, force: boolean = false): Promise<void>` it and listen to changes by providing a callback to `onChange(cb: any): () => void`.
+
+### `translate: (key: string, interpolationsOrMagicNumber?: Record<string, string> | number, maybeMagicNumber?: number) => string`
+
+It looks for the key in your translations and return it. You can provide interpolations to use in case you have some dynamic content.
+
+Also, you can use pluralization by providing a magic number as the last argument (either after the key or the interpolations if you are providing some).
+
+### `waitUntilReady: Promise<void>`
+
+Setting up everything takes some time, as `stencil-i18n-store` needs to load your translations. In your application, you need to wait for this promise to be resolved before being able to use `translate`. You usually want to do that in the `componentWillLoad` of your root component.
+
 ## Advanced Usage
 
 ### Polyfilling Intl
