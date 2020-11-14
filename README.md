@@ -21,27 +21,120 @@ export default {
 }
 ```
 
-Finally, add your store wherever you have your stores:
+The reason to separate config from store is that there are some features planned down the road that will benefit from having them in different files. Finally, add your store wherever you have your stores:
 
 ```ts
 // src/stores/i18n.ts
 import { createI18nStore } from 'stencil-i18n-store';
 import config from '../i18n.config';
 
-export const i18n = createI18nStore(config);
+const { translate, locale, waitUntilReady } = createI18nStore(config);
+
+export { translate, locale, waitUntilReady };
 ```
 
-Though exporting the store directly is possible, selecting which parts to export is more desirable. We'll see some advance usage later on.
+Though exporting the store directly is possible, selecting which parts to export is more desirable.
+
+Finally, create the place where you'll store your translation files:
+
+```bash
+$> mkdir -p src/assets/locales
+$> touch src/assets/locales/en.json # Or the locale you need.
+```
 
 ## Basic Usage
 
-The store will start loading the best fit locale as soon as it is created. `createI18nStore` exposes a `waitUntilReady` promise so you can wait to render your app until everything is ready. After that initial wait, you won't need to worry about anything, as changing the locale will wait until the new translations are loaded to rerender your components.
+First, make sure you've installed everything. After going through installation you will have some translation files and a store.
+
+The store will start loading the best fit locale as soon as it is created. `createI18nStore` exposes a `waitUntilReady` promise so you can wait to render your app until everything is ready. By adding this small step, we can have a synchronous API for `translate`, which makes the overall experience much nicer,
+
+```tsx
+// src/components/my-root-component/my-root-component.tsx
+import { waitUntilReady } from '../../stores/i18n';
+
+@Component({ tag: 'my-root-component' })
+export class MyRootComponent {
+  async componentWillLoad() {
+    await waitUntilReady;
+  }
+
+  render() {
+    return <rest-of-my-app />
+  }
+}
+```
+
+After that initial wait, you won't need to worry about anything, as changing the locale will wait until the new translations are loaded to rerender your components.
 
 After that, just use `translate` in your components.
 
+```tsx
+import { translate as t } from '../../stores/i18n';
+
+@Component({ tag: 'some-component' })
+export class SomeComponent {
+  render() {
+    return <div>{ t('my.some-component.header') }</div>
+  }
+}
+```
+
+In this case, `stencil-i18n-store` will look for the `'my.some-component.header'` key in the translation file for the current locale.
+
+`translate` allows for a second optional parameter that is a `Record<string,string>` with substitutions for the translation.
+
+```json
+// en.json
+{
+  "greeting": "Hello, {name}"
+}
+```
+
+```tsx
+import { translate as t } from '../../stores/i18n';
+
+@Component({ tag: 'greeter-component' })
+export class GreeterComponent {
+  @Prop() name: string;
+  render() {
+    return <div>{ t('greeting', { name: this.name }) }</div>
+  }
+}
+```
+
+Rendering the previous component as `<greeter-component name="Sergio" />` would render _Hello, Sergio_.
+
+`translate` also admits a third optional argument: a _magic number_ `stencil-i18n-store` can use to select the right pluralization form of the key.
+
+```json
+// en.json
+{
+  "item-count.zero": "There are no items."
+  "item-count.one": "There is only one item."
+  "item-count.other": "There are {count} items."
+}
+```
+
+```tsx
+import { translate as t } from '../../stores/i18n';
+
+@Component({ tag: 'counter-component' })
+export class GreeterComponent {
+  @Prop() count: number;
+  render() {
+    const { count } = this;
+    return <div>{ t('item-count', { count }, count) }</div>
+  }
+}
+```
+
+In this case, `<counter-component count="0" />` will render _"There are no items."_; if `count` were `1`, then it would render _"There is only one item."_; and, in any other case, _"There are X items."_, where _X_ is the number of items.
+
+Having to pass the count twice is a conscious decision as in some cases you want to format the count before using it.
+
 ### Translation files.
 
-Translation files are just JSON files. The JSON needs to be a `Record<string, string>`.
+Translation files are just JSON files. The JSON needs to be a `Record<string, string>`, without any nested structure, as `stencil-i18n-store` won't split keys in any way by default before looking for them.
 
 ```json
 // en.json
